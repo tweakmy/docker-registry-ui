@@ -56,6 +56,8 @@ func main() {
 		configFile  string
 		purgeTags   bool
 		purgeDryRun bool
+		registry_username string
+		registry_password string
 	)
 	flag.StringVar(&configFile, "config-file", "config.yml", "path to the config file")
 	flag.BoolVar(&purgeTags, "purge-tags", false, "purge old tags instead of running a web server")
@@ -73,6 +75,17 @@ func main() {
 	if err := yaml.Unmarshal(bytes, &a.config); err != nil {
 		panic(err)
 	}
+
+        //Read Enviroment variable for its username password
+        registry_username = os.Getenv("REGISTRY_USERNAME")
+        registry_password = os.Getenv("REGISTRY_PASSWORD")
+
+        if registry_username == "" || registry_password == "" {
+                panic("No env defined for REGISTRY_USERNAME or REGISTRY_PASSWORD")
+        }
+  	a.config.Username = registry_username
+        a.config.Password = registry_password
+	
 	// Validate registry URL.
 	u, err := url.Parse(a.config.RegistryURL)
 	if err != nil {
