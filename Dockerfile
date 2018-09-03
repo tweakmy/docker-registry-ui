@@ -1,21 +1,21 @@
 FROM golang:1.10.3-alpine as builder
 
-ENV GOPATH /opt
-
 RUN apk update && \
-    apk add ca-certificates git build-base && \
-    go get github.com/Masterminds/glide
+    apk add ca-certificates git build-base 
 
-ADD glide.* /opt/src/github.com/quiq/docker-registry-ui/
-RUN cd /opt/src/github.com/quiq/docker-registry-ui && \
-    /opt/bin/glide install
+RUN go get -u github.com/golang/dep/cmd/dep
 
-ADD events /opt/src/github.com/quiq/docker-registry-ui/events
-ADD registry /opt/src/github.com/quiq/docker-registry-ui/registry
-ADD *.go /opt/src/github.com/quiq/docker-registry-ui/
-RUN cd /opt/src/github.com/quiq/docker-registry-ui && \
-    go test -v ./registry && \
-    go build -o /opt/docker-registry-ui github.com/quiq/docker-registry-ui
+ENV GOPATH /opt/project
+
+ADD Gopkg.* /opt/project/src/github.com/tweakmy/docker-registry-ui/
+
+ADD events /opt/project/src/github.com/tweakmy/docker-registry-ui/events
+ADD registry /opt/project/src/github.com/tweakmy/docker-registry-ui/registry
+ADD *.go /opt/project/src/github.com/tweakmy/docker-registry-ui/
+WORKDIR /opt/project/src/github.com/tweakmy/docker-registry-ui  
+RUN dep ensure -v
+RUN go test -v ./registry 
+RUN go build -o /opt/docker-registry-ui github.com/tweakmy/docker-registry-ui
 
 
 FROM alpine:3.8
